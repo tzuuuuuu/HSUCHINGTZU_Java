@@ -5,7 +5,7 @@ import com.library.back.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-//import java.util.Optional;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -17,11 +17,13 @@ public class UserService {
      * 處理使用者註冊邏輯
      */
     public String registerUser(User user) {
-        // 1. 檢查手機號碼是否已經存在 (因為你的資料庫 Phone_Number 是 UNIQUE)
-        // 注意：這裡我們需要去 Repository 額外寫一個找手機的方法，我們先用虛擬碼邏輯，等一下去 Repository 補上
+    	// 1. 先用前端傳來的手機號碼，去資料庫查看看有沒有這個人
+        Optional<User> existingUser = userRepository.findByPhoneNumber(user.getPhoneNumber());
         
-        // 為了不讓畫面現在噴錯，我們直接來幫 Repository 加上自訂查詢！
-        // 我們先做基礎儲存，等一下帶你回 Repository 補齊手機查詢。
+        // 2. 如果找到了，代表手機號碼被註冊過了，直接攔截並退回！
+        if (existingUser.isPresent()) {
+            return "註冊失敗：該手機號碼已被註冊！";
+        }
         
         try {
             userRepository.save(user);

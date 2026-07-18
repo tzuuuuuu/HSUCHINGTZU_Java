@@ -17,27 +17,30 @@ const handleLogin = async () => {
   }
 
   try {
-    message.value = '正在驗證身份...'
+    message.value = '正在連線中央資料庫...'
     
-    // 呼叫後端 Spring Boot 登入接口 test-login
-    const response = await axios.get('http://localhost:8050/test-login', {
-      params: {
-        phone: phoneNumber.value,
-        password: password.value
-      }
+    // 🎯 1. 改用 axios.post 發送請求
+    // 🎯 2. 網址改成後端剛寫好的正式路徑 /api/users/login
+    const response = await axios.post('http://localhost:8050/api/users/login', {
+      // 🎯 3. 不用 params 包裹，直接把資料倒進去，欄位名稱要精準對齊 User.java
+      phoneNumber: phoneNumber.value,
+      password: password.value
     })
     
-    message.value = '後端回應：' + response.data
+    // 顯示後端回傳的真實訊息（包含「歡迎回來，XXX」）
+    message.value = response.data;
     
-    // 如果後端回傳包含「成功」，代表登入順利
+    // 如果後端回應包含「成功」，代表登入成功
     if (response.data.includes('成功')) {
-      message.value = '🎉 登入成功！正在前往圖書大廳...'
-      // 未來我們建好圖書大廳後，就可以用這行跳轉：
-      // setTimeout(() => { router.push('/books') }, 1500)
+      // 可以在這裡設定 1.5 秒後跳轉到首頁或圖書大廳
+      setTimeout(() => {
+        router.push('/books') // 預留給我們下一步的圖書大廳路徑！
+      }, 1500)
     }
+
   } catch (error) {
     console.error(error)
-    message.value = '❌ 連線後端失敗，請確保後端有啟動！'
+    message.value = '❌ 連線後端正式登入接口失敗！'
   }
 }
 

@@ -18,6 +18,8 @@ public class UserController {
     // 註冊接口：因為要接收前端傳來的表單資料，要用 Post 協定
     @PostMapping("/register")
     public String register(@RequestBody User user) {
-        return userService.registerUser(user);
+        return userService.registerUser(user);   
     }
+    
+    
 }

@@ -19,19 +19,30 @@ const handleRegister = async () => {
   }
 
   try {
-    // 呼叫後端 Spring Boot 的接口
-    // 這裡我們暫時用先前寫的 test 接口做測試，並用 Query String 的方式傳遞資料
+    message.value = '正在連接後端資料庫...'
+    
     const response = await axios.get('http://localhost:8050/test-register', {
       params: {
-        // 這邊的 Key 必須跟你的後端 Controller 接收假資料時的格式對上
-        // 或者是等我們未來改為標準的 POST 接收
+        name: userName.value,
+        phone: phoneNumber.value,
+        password: password.value
       }
     })
     
-    message.value = '註冊要求已送出！後端回應：' + response.data
+    // 🔍 聰明判斷：如果後端回應包含「失敗」二字，就不要慶祝了！
+    if (response.data.includes('失敗')) {
+      message.value = '❌ ' + response.data
+    } else {
+      message.value = '🎉 註冊成功！後端回應：' + response.data
+      // 真正成功才幫他跳轉
+      setTimeout(() => {
+        router.push('/')
+      }, 2000)
+    }
+
   } catch (error) {
     console.error(error)
-    message.value = '連線後端失敗，請確保後端 Spring Boot 有啟動！'
+    message.value = '❌ 連線後端失敗！請確保後端有啟動且 CORS 已開通！'
   }
 }
 </script>

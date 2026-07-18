@@ -34,7 +34,7 @@ public class UserService {
     }
     
     //處理使用者登入驗證邏輯
-    public String loginUser(Integer phoneNumber, String password) {
+    public String loginUser(String phoneNumber, String password) {
         // 1. 先用手機號碼去資料庫找人
         Optional<User> userOpt = userRepository.findByPhoneNumber(phoneNumber);
         
@@ -55,5 +55,47 @@ public class UserService {
         userRepository.save(user); // 儲存更新時間
         
         return "登入成功！歡迎回來，" + user.getUserName() + " 🚀";
+    }
+    
+    @Autowired
+    private com.library.back.repository.InventoryRepository inventoryRepository;
+
+    @Autowired
+    private com.library.back.repository.BorrowingRecordRepository borrowingRecordRepository;
+
+    /**
+     * 核心借書功能：同時異動多張表，並開啟 Transaction 交易機制
+     */
+    @org.springframework.transaction.annotation.Transactional // 👈 就是這個註解！確保交易完整性，防範資料錯亂
+    public String borrowBook(Integer userId, Integer inventoryId) {
+        
+        // 1. 檢查庫存是否存在
+        java.util.Optional<com.library.back.entity.Inventory> inventoryOpt = inventoryRepository.findById(inventoryId);
+        if (!inventoryOpt.isPresent()) {
+            return "借書失敗：找不到該庫存編號！";
+        }
+        
+        com.library.back.entity.Inventory inventory = inventoryOpt.get();
+        
+        // 2. 檢查書籍是否「在庫」 (如果已經是 出借中、整理中 等，就不能借)
+        if (!"在庫".equals(inventory.getStatus())) {
+            return "借書失敗：該書籍目前狀態為「" + inventory.getStatus() + "」，無法借閱！";
+        }
+        
+        // 3. 變更書籍狀態為「出借中」
+        inventory.setStatus("出借中");
+        inventoryRepository.save(inventory); // 更新庫存狀態
+        
+        // 4. 新增一筆借閱紀錄
+        com.library.back.entity.BorrowingRecord record = new com.library.back.entity.BorrowingRecord();
+        record.setUserId(userId);
+        record.setInventoryId(inventoryId);
+        record.setBorrowongTime(java.time.LocalDateTime.now());
+        // 剛借書時，還書時間可以先給一個預設值，或是跟著你的 SQL 預設 current_timestamp()
+        record.setReturnTime(java.time.LocalDateTime.now()); 
+        
+        borrowingRecordRepository.save(record); // 寫入紀錄表
+        
+        return "借書成功！已成功借出庫存編號：" + inventoryId;
     }
 }

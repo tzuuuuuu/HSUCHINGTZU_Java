@@ -11,5 +11,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	
 	// 只要寫出這個名字，JPA 就會自動幫你生成 SQL: SELECT * FROM user WHERE Phone_Number = ?
     // 並且會自動防範 SQL Injection！
-    Optional<User> findByPhoneNumber(Integer phoneNumber);
+    Optional<User> findByPhoneNumber(String phoneNumber);
 }

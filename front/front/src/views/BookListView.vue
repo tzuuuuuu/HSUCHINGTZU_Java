@@ -1,5 +1,6 @@
 <template>
   <div class="book-container">
+    <button @click="handleLogout" class="btn-logout">Logout ➔</button>
     <h2>📚 圖書借閱大廳</h2>
     <!-- 為了測試方便，我們這裡先寫死目前登入的使用者為 User_id = 2 (即 test 帳號) -->
     <p class="welcome-msg">歡迎回來！目前登入代號：User 2 👤</p>
@@ -57,8 +58,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
+const router = useRouter()
 const inventoryList = ref([])
 const currentUserId = 2 // 預設當前操作者為 test 用戶
 
@@ -71,7 +74,12 @@ const fetchInventory = async () => {
     console.error('撈取庫存失敗：', error)
   }
 }
-
+// 登出點擊事件
+const handleLogout = () => {
+  // 未來如果登入有存 token 或 Session，可以在這裡執行 localStorage.clear()
+  alert('您已成功登出系統！')
+  router.push('/') // 跳轉回登入頁面 (path: '/')
+}
 // 執行借書
 const handleBorrow = async (inventoryId) => {
   try {
@@ -100,8 +108,35 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.book-container { max-width: 1000px; margin: 40px auto; padding: 20px; font-family: sans-serif; }
-h2 { color: #333; border-bottom: 2px solid #409eff; padding-bottom: 10px; }
+.book-container { 
+    max-width: 1000px; 
+    margin: 40px auto; 
+    padding: 20px; 
+    font-family: sans-serif;
+    position: relative; 
+    }
+.btn-logout {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #f56c6c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-logout:hover {
+  background-color: #dd6161;
+}
+
+h2 { 
+    color: #333; 
+    border-bottom: 2px solid #409eff; 
+    padding-bottom: 10px; 
+    }
 .welcome-msg { color: #666; margin-bottom: 20px; }
 .book-table { width: 100%; border-collapse: collapse; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }

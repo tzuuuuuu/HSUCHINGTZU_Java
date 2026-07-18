@@ -5,12 +5,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
 @Entity
 @Table(name = "user") // 對應資料表 user
 public class User {
 
     @Id // 主鍵
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //關鍵修正：讓資料庫自己遞增 ID (1, 2, 3...)，前端不用傳！
     @Column(name = "User_id")
     private Integer userId;
 
@@ -26,8 +29,12 @@ public class User {
     @Column(name = "Registration_Time", nullable = false, updatable = false)
     private LocalDateTime registrationTime = LocalDateTime.now();
 
-    @Column(name = "Last_Login_Time", nullable = false)
-    private LocalDateTime lastLoginTime = LocalDateTime.now();
+    /*@Column(name = "Last_Login_Time", nullable = false)
+    private LocalDateTime lastLoginTime = LocalDateTime.now();*/
+    
+ // 🎯 關鍵修正：允許新註冊用戶的最後登入時間暫時為空，或者由後端登入時再寫入
+    @Column(name = "Last_Login_Time", nullable = true) 
+    private LocalDateTime lastLoginTime;
 
     // --- 以下是 Getter 和 Setter ---
 

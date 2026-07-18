@@ -21,20 +21,19 @@ const handleRegister = async () => {
   try {
     message.value = '正在連接後端資料庫...'
     
-    const response = await axios.get('http://localhost:8050/test-register', {
-      params: {
-        name: userName.value,
-        phone: phoneNumber.value,
-        password: password.value
-      }
+    // 🎯 1. 改用 axios.post 發送機密資料
+    // 🎯 2. 網址換成你在 UserController 設定的 /api/users/register
+    const response = await axios.post('http://localhost:8050/api/users/register', {
+      // 🎯 3. POST 傳送資料不用 params 包裹，直接把物件倒進去
+      userName: userName.value,
+      phoneNumber: phoneNumber.value,
+      password: password.value
     })
     
-    // 🔍 聰明判斷：如果後端回應包含「失敗」二字，就不要慶祝了！
-    if (response.data.includes('失敗')) {
-      message.value = '❌ ' + response.data
-    } else {
-      message.value = '🎉 註冊成功！後端回應：' + response.data
-      // 真正成功才幫他跳轉
+    message.value = "後端回應：" + response.data;
+    
+    // 如果回應包含「成功」或者不包含「失敗」，就在 2 秒後跳轉
+    if (response.data.includes('成功')) {
       setTimeout(() => {
         router.push('/')
       }, 2000)
@@ -42,7 +41,7 @@ const handleRegister = async () => {
 
   } catch (error) {
     console.error(error)
-    message.value = '❌ 連線後端失敗！請確保後端有啟動且 CORS 已開通！'
+    message.value = '❌ 連線後端正式接口失敗！'
   }
 }
 </script>

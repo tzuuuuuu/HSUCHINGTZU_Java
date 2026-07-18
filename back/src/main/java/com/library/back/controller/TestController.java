@@ -27,15 +27,35 @@ public class TestController {
     public List<Book> getAllBooks() {
         return bookRepository.findAll(); // 自動去資料庫撈出所有的書，並轉成 JSON 格式倒給網頁
     }
-    
+    /*
  // 新增的測試功能：只要在瀏覽器輸入這個網址，就會幫我們自動註冊一個王小明！
     @GetMapping("/test-register")
     public String testRegister() {
         User mockUser = new User();
-        mockUser.setUserId(1);
+        //mockUser.setUserId(1);
         mockUser.setPhoneNumber("0912345678");
         mockUser.setPassword("myPassword123");
         mockUser.setUserName("王小明");
+        
+        return userService.registerUser(mockUser);
+    }*/
+ // 註冊測試：讓參數可以動態傳入
+    @GetMapping("/test-register")
+    public String testRegister(
+        @RequestParam(required = false) String name, 
+        @RequestParam(required = false) String phone, 
+        @RequestParam(required = false) String password
+    ) {
+        // 🛡️ 防呆機制：如果直接敲網址什麼都沒帶，就不要去煩資料庫了
+        if (name == null || phone == null || password == null || name.isEmpty() || phone.isEmpty() || password.isEmpty()) {
+            return "註冊失敗：請透過網頁表單註冊，或在網址後方帶入 ?name=xxx&phone=xxx&password=xxx 進行測試。";
+        }
+
+        User mockUser = new User();
+        // 這裡不再寫死！而是把網頁傳過來的變數（name, phone, password）塞進去！
+        mockUser.setUserName(name);
+        mockUser.setPhoneNumber(phone);
+        mockUser.setPassword(password);
         
         return userService.registerUser(mockUser);
     }

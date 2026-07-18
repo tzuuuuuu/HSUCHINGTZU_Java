@@ -59,6 +59,12 @@ public class TestController {
         return userService.borrowBook(1, 101);
     }
     
+ // 測試還書功能
+    @GetMapping("/test-return")
+    public String testReturn() {
+        // 歸還剛剛借出的庫存編號 101 的書
+        return userService.returnBook(101);
+    }
 	/*
 	@GetMapping("/hello")
     public String sayHello() {

@@ -98,4 +98,40 @@ public class UserService {
         
         return "借書成功！已成功借出庫存編號：" + inventoryId;
     }
+    
+    /**
+     * 🔥 核心還書功能：異動多張表，並開啟 Transaction 交易機制
+     */
+    @org.springframework.transaction.annotation.Transactional
+    public String returnBook(Integer inventoryId) {
+        
+        // 1. 檢查庫存是否存在
+        java.util.Optional<com.library.back.entity.Inventory> inventoryOpt = inventoryRepository.findById(inventoryId);
+        if (!inventoryOpt.isPresent()) {
+            return "還書失敗：找不到該庫存編號！";
+        }
+        
+        com.library.back.entity.Inventory inventory = inventoryOpt.get();
+        
+        // 2. 檢查書籍是不是本來就已經在架上 (如果本來就是在庫，就不需要還)
+        if ("在庫".equals(inventory.getStatus())) {
+            return "還書失敗：該書籍目前本來就在庫，無需歸還！";
+        }
+        
+        // 3. 變更書籍狀態為「在庫」 (對齊你的規格書要求)
+        inventory.setStatus("在庫");
+        inventoryRepository.save(inventory); // 更新庫存狀態
+        
+        // 4. 尋找那一筆借閱紀錄並更新還書時間
+        // 由於先前我們暫時將 inventoryId 當作主鍵，這裡可以直接用 findById 撈出那一筆紀錄
+        java.util.Optional<com.library.back.entity.BorrowingRecord> recordOpt = borrowingRecordRepository.findById(inventoryId);
+        if (recordOpt.isPresent()) {
+            com.library.back.entity.BorrowingRecord record = recordOpt.get();
+            // 更新還書時間為現在時間
+            record.setReturnTime(java.time.LocalDateTime.now());
+            borrowingRecordRepository.save(record);
+        }
+        
+        return "還書成功！已成功歸還庫存編號：" + inventoryId;
+    }
 }

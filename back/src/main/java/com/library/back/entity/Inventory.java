@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 @Table(name = "inventory")
@@ -16,12 +18,25 @@ public class Inventory {
 
     @Column(name = "ISBN", length = 20, nullable = false)
     private String isbn;
-
+    
+    @ManyToOne
+    @JoinColumn(name = "ISBN", referencedColumnName = "ISBN", insertable = false, updatable = false)
+    private Book book;
+    
     @Column(name = "Store_Time", nullable = false)
     private LocalDateTime storeTime = LocalDateTime.now();
 
     @Column(name = "Status", nullable = false)
     private String status = "在庫";
+    
+ // --- Getter 和 Setter ---
+    public Book getBook() {
+        return book;
+    }
+
+    public void setBook(Book book) {
+        this.book = book;
+    }
 
     public Integer getInventoryId() {
         return inventoryId;

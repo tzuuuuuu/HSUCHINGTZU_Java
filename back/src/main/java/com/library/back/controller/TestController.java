@@ -37,6 +37,20 @@ public class TestController {
         return userService.registerUser(mockUser);
     }
     
+ // 🔥 測試登入 A：故意把密碼打錯 (王小明原本的密碼是 myPassword123)
+    @GetMapping("/test-login-wrong")
+    public String testLoginWrong() {
+        // 傳入王小明的手機，但密碼故意打 123456
+        return userService.loginUser(912345678, "123456");
+    }
+
+    // 🔥 測試登入 B：輸入完全正確的資料
+    @GetMapping("/test-login-success")
+    public String testLoginSuccess() {
+        // 傳入王小明的手機和正確密碼
+        return userService.loginUser(912345678, "myPassword123");
+    }
+    
 	/*
 	@GetMapping("/hello")
     public String sayHello() {

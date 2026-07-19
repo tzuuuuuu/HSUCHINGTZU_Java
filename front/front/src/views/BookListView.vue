@@ -3,7 +3,8 @@
     <button @click="handleLogout" class="btn-logout">Logout ➔</button>
     <h2>📚 圖書借閱大廳</h2>
     <!-- 為了測試方便，我們這裡先寫死目前登入的使用者為 User_id = 2 (即 test 帳號) -->
-    <p class="welcome-msg">歡迎回來！目前登入代號：User 2 👤</p>
+    
+    <p class="welcome-msg">👤 {{ userGreeting }}</p>
     
     <table class="book-table">
       <thead>
@@ -36,14 +37,19 @@
               點我借閱
             </button>
             
-            <!-- 還書按鈕：只有在「出借中」時可以按 -->
+            <!-- 還書按鈕：只有在「出借中」且【真的是目前登入者借的】時候才可以按 -->
             <button 
-              v-else-if="item.status === '出借中'" 
+              v-else-if="item.status === '出借中' && item.currentBorrowerId === currentUserId" 
               @click="handleReturn(item.inventoryId)" 
               class="btn btn-return"
             >
               歸還書籍
             </button>
+            
+            <!-- 防偷還提示：如果是別人借的，顯示灰色字樣，按鈕隱藏 -->
+            <span v-else-if="item.status === '出借中'" class="text-others">
+              已出借 (他人借閱)
+            </span>
             
             <span v-else class="text-muted">不可操作</span>
           </td>
@@ -63,7 +69,11 @@ import axios from 'axios'
 
 const router = useRouter()
 const inventoryList = ref([])
-const currentUserId = 2 // 預設當前操作者為 test 用戶
+
+// 🎯 活化變數：動態獲取登入者資訊
+const userGreeting = ref('未登入使用者')
+const currentUserId = ref(2) // 預設安全值，下面會根據登入狀況動態改寫
+//const currentUserId = 2 // 預設當前操作者為 test 用戶
 
 // 撈取庫存明細
 const fetchInventory = async () => {
@@ -76,14 +86,16 @@ const fetchInventory = async () => {
 }
 // 登出點擊事件
 const handleLogout = () => {
-  // 未來如果登入有存 token 或 Session，可以在這裡執行 localStorage.clear()
+  // 🎯 登出時，把瀏覽器的暫存記憶清除，才算真正登出
+  localStorage.removeItem('loggedInUserPhone')
+  localStorage.removeItem('welcomeMessage')
   alert('您已成功登出系統！')
-  router.push('/') // 跳轉回登入頁面 (path: '/')
+  router.push('/')
 }
 // 執行借書
 const handleBorrow = async (inventoryId) => {
   try {
-    const response = await axios.post(`http://localhost:8050/api/books/borrow?userId=${currentUserId}&inventoryId=${inventoryId}`)
+    const response = await axios.post(`http://localhost:8050/api/books/borrow?userId=${currentUserId.value}&inventoryId=${inventoryId}`)    
     alert(response.data)
     fetchInventory() // 重新整理網頁狀態
   } catch (error) {
@@ -104,6 +116,19 @@ const handleReturn = async (inventoryId) => {
 
 onMounted(() => {
   fetchInventory()
+
+  // 🎯 頁面加載時，直接從瀏覽器取出「絕對真實、絕不瞎猜」的 UserId 與歡迎詞！
+  const savedMsg = localStorage.getItem('welcomeMessage')
+  const savedId = localStorage.getItem('currentUserId')
+  
+  if (savedMsg) {
+    userGreeting.value = savedMsg;
+  }
+  
+  if (savedId) {
+    // 🎯 不管是 User 1、User 2 還是剛註冊的 User 3，全部動態對齊！
+    currentUserId.value = parseInt(savedId); 
+  }
 })
 </script>
 
@@ -153,4 +178,5 @@ tr:hover { background-color: #f5f5f5; }
 .btn-return:hover { background-color: #cf9236; }
 .no-data { text-align: center; color: #999; padding: 30px; }
 .text-muted { color: #999; }
+.text-others { color: #909399; font-style: italic; font-weight: bold; }
 </style>

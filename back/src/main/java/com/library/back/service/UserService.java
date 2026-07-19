@@ -57,6 +57,23 @@ public class UserService {
         return "登入成功！歡迎回來，" + user.getUserName() + " 🚀";
     }
     
+    public com.library.back.entity.User loginUserObject(String phoneNumber, String password) {
+        // 利用你原本寫好的 userRepository 尋找手機號碼
+        java.util.Optional<com.library.back.entity.User> userOpt = userRepository.findByPhoneNumber(phoneNumber);
+        
+        if (userOpt.isPresent()) {
+            com.library.back.entity.User user = userOpt.get();
+            // 驗證密碼
+            if (user.getPassword().equals(password)) {
+                // 順便更新最後登入時間（維持你昨天的優良功能）
+                user.setLastLoginTime(java.time.LocalDateTime.now());
+                userRepository.save(user);
+                return user; // 驗證成功，回傳完整的 user 物件！
+            }
+        }
+        return null; // 失敗回傳 null
+    }
+    
     @Autowired
     private com.library.back.repository.InventoryRepository inventoryRepository;
 

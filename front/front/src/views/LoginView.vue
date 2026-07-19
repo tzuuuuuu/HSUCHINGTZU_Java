@@ -31,16 +31,25 @@ const handleLogin = async () => {
     message.value = response.data;
     
     // 如果後端回應包含「成功」，代表登入成功
-    if (response.data.includes('成功')) {
-      // 可以在這裡設定 1.5 秒後跳轉到首頁或圖書大廳
+    // 🎯 修正接收方式：因為後端改回傳物件，改用 response.data.status 判斷
+    if (response.data.status === 'success') {
+      // 完美的把後端傳來的真實 userId 刻進瀏覽器裡！User 3 也能完美自證身份！
+      localStorage.setItem('currentUserId', response.data.userId);
+      localStorage.setItem('welcomeMessage', response.data.message);
+      
+      message.value = response.data.message;
+      
       setTimeout(() => {
-        router.push('/books') // 預留給我們下一步的圖書大廳路徑！
-      }, 1500)
+        router.push('/books')
+      }, 1200)
     }
-
   } catch (error) {
-    console.error(error)
-    message.value = '❌ 連線後端正式登入接口失敗！'
+    // 處理密碼錯誤的 401 狀態
+    if (error.response && error.response.data) {
+      message.value = error.response.data.message;
+    } else {
+      message.value = '伺服器連線失敗！';
+    }
   }
 }
 

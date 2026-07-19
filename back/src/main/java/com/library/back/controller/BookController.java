@@ -23,12 +23,38 @@ public class BookController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private com.library.back.repository.BorrowingRecordRepository borrowingRecordRepository;
 
+    @GetMapping("/inventory")
+    public List<Inventory> getAllInventory() {
+        List<Inventory> inventories = inventoryRepository.findAll();
+        List<com.library.back.entity.BorrowingRecord> allRecords = borrowingRecordRepository.findAll();
+
+        // 🎯 動態配對：幫每一本出借中的書，找出是哪個 User 借走的
+        for (Inventory inv : inventories) {
+            if ("出借中".equals(inv.getStatus())) {
+                for (com.library.back.entity.BorrowingRecord record : allRecords) {
+                    // 如果紀錄對應這本書，且尚未真正歸還（借書時間與還書時間相同，代表還沒更新還書時間）
+                    if (record.getInventoryId().equals(inv.getInventoryId()) && 
+                        record.getBorrowongTime().isEqual(record.getReturnTime())) {
+                        
+                        // 把借閱者的 User_id 填進去！
+                        inv.setCurrentBorrowerId(record.getUserId());
+                        break;
+                    }
+                }
+            }
+        }
+        return inventories;
+    }
+    /*
     // 🎯 1. 獲取所有庫存狀態（供圖書大廳渲染）
     @GetMapping("/inventory")
     public List<Inventory> getAllInventory() {
         return inventoryRepository.findAll();
-    }
+    }*/
 
     // 🎯 2. 借書接口：接收前端傳來的用戶 ID 與庫存 ID
     @PostMapping("/borrow")

@@ -11,6 +11,16 @@ import jakarta.persistence.ManyToOne;
 @Entity
 @Table(name = "inventory")
 public class Inventory {
+	@jakarta.persistence.Transient
+    private Integer currentBorrowerId;
+
+    public Integer getCurrentBorrowerId() {
+        return currentBorrowerId;
+    }
+
+    public void setCurrentBorrowerId(Integer currentBorrowerId) {
+        this.currentBorrowerId = currentBorrowerId;
+    }
 
     @Id
     @Column(name = "Inventory_id")

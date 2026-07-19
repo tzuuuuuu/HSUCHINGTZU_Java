@@ -20,8 +20,8 @@ public class BorrowingRecord {
     @Column(name = "Borrowong_Time", nullable = false)
     private LocalDateTime borrowongTime = LocalDateTime.now();
 
-    @Column(name = "Return_Time", nullable = false)
-    private LocalDateTime returnTime = LocalDateTime.now();
+    @Column(name = "Return_Time", nullable = true)
+    private LocalDateTime returnTime;
 
     // --- Getter and Setter ---
 

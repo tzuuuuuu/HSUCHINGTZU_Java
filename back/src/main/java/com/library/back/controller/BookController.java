@@ -32,17 +32,22 @@ public class BookController {
         List<Inventory> inventories = inventoryRepository.findAll();
         List<com.library.back.entity.BorrowingRecord> allRecords = borrowingRecordRepository.findAll();
 
-        // 🎯 動態配對：幫每一本出借中的書，找出是哪個 User 借走的
         for (Inventory inv : inventories) {
             if ("出借中".equals(inv.getStatus())) {
+                // 先預設一個找不到人的狀態
+                inv.setCurrentBorrowerId(-1); 
+                
                 for (com.library.back.entity.BorrowingRecord record : allRecords) {
-                    // 如果紀錄對應這本書，且尚未真正歸還（借書時間與還書時間相同，代表還沒更新還書時間）
-                    if (record.getInventoryId().equals(inv.getInventoryId()) && 
-                        record.getBorrowongTime().isEqual(record.getReturnTime())) {
-                        
-                        // 把借閱者的 User_id 填進去！
-                        inv.setCurrentBorrowerId(record.getUserId());
-                        break;
+                    // 🎯 加強版判斷：1. 庫存編號對得上 
+                    // 2. 還書時間是 null，或者還書時間跟借書時間一模一樣（資料庫舊資料防呆）
+                    if (record.getInventoryId().equals(inv.getInventoryId())) {
+                        if (record.getReturnTime() == null || 
+                            record.getReturnTime().isEqual(record.getBorrowongTime())) {
+                            
+                            // 成功抓到目前的借閱者 ID！
+                            inv.setCurrentBorrowerId(record.getUserId());
+                            break;
+                        }
                     }
                 }
             }

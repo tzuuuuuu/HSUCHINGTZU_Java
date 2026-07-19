@@ -111,6 +111,8 @@ public class UserService {
         // 剛借書時，還書時間可以先給一個預設值，或是跟著你的 SQL 預設 current_timestamp()
         record.setReturnTime(java.time.LocalDateTime.now()); 
         
+        record.setReturnTime(null);
+        
         borrowingRecordRepository.save(record); // 寫入紀錄表
         
         return "借書成功！已成功借出庫存編號：" + inventoryId;
